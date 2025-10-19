@@ -80,11 +80,11 @@ function populateCategories() {
 // ----- Filter Quotes -----
 categoryFilter.addEventListener('change', filterQuotes);
 function filterQuotes() {
-  const selected = categoryFilter.value;
-  localStorage.setItem('lastCategory', selected);
-  if (selected === 'all') showRandomQuote();
+  const selectedCategory = categoryFilter.value;
+  localStorage.setItem('lastCategory', selectedCategory);
+  if (selectedCategory === 'all') showRandomQuote();
   else {
-    const filtered = quotes.filter(q => q.category === selected);
+    const filtered = quotes.filter(q => q.category === selectedCategory);
     showRandomQuote(filtered);
   }
 }
@@ -118,28 +118,22 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// ----- Server Sync & Conflict Resolution -----
+// ----- Server Sync Simulation -----
 async function fetchQuotesFromServer() {
   const response = await fetch('https://jsonplaceholder.typicode.com/posts');
   const data = await response.json();
   return data.slice(0,5).map(item => ({ text: item.title, category: 'Server' }));
 }
 
-// POST Quotes to Server
 async function postQuoteToServer(quote) {
-  try {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(quote)
-    });
-    const data = await response.json();
-    console.log("Quote posted to server:", data);
-  } catch (err) {
-    console.error("Error posting quote to server:", err);
-  }
+  await fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(quote)
+  });
 }
 
+// ----- Sync Quotes and Handle Conflicts -----
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let newQuotes = 0;
@@ -165,8 +159,11 @@ async function syncQuotes() {
     saveQuotes();
     populateCategories();
     showRandomQuote();
-    if (newQuotes > 0) alert(`${newQuotes} new quotes added from server.`);
-    if (conflictsResolved > 0) alert(`${conflictsResolved} conflicts resolved based on server data.`);
+    let message = '';
+    if (newQuotes > 0) message += `${newQuotes} new quotes added from server.\n`;
+    if (conflictsResolved > 0) message += `${conflictsResolved} conflicts resolved based on server data.\n`;
+    message += "Quotes synced with server!";
+    alert(message);
   }
 }
 
