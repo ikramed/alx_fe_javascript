@@ -6,7 +6,7 @@ let quotes = JSON.parse(localStorage.getItem('quotes')) || [
 
 // ----- Display Random Quote -----
 const quoteDisplay = document.getElementById('quoteDisplay');
-function displayQuote(filteredQuotes = quotes) {
+function showRandomQuote(filteredQuotes = quotes) {
   if (filteredQuotes.length === 0) {
     quoteDisplay.textContent = "No quotes to display.";
     return;
@@ -28,7 +28,7 @@ function addQuote() {
   quotes.push({ text, category });
   saveQuotes();
   populateCategories();
-  displayQuote();
+  showRandomQuote();
   newQuoteText.value = '';
   newQuoteCategory.value = '';
 }
@@ -50,7 +50,6 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  // Restore last selected filter
   const lastFilter = localStorage.getItem('lastCategory') || 'all';
   categoryFilter.value = lastFilter;
   filterQuotes();
@@ -61,10 +60,10 @@ categoryFilter.addEventListener('change', filterQuotes);
 function filterQuotes() {
   const selected = categoryFilter.value;
   localStorage.setItem('lastCategory', selected);
-  if (selected === 'all') displayQuote();
+  if (selected === 'all') showRandomQuote();
   else {
     const filtered = quotes.filter(q => q.category === selected);
-    displayQuote(filtered);
+    showRandomQuote(filtered);
   }
 }
 
@@ -97,9 +96,34 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+// ----- Server Sync Simulation -----
+async function fetchQuotesFromServer() {
+  const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const data = await response.json();
+  return data.slice(0,5).map(item => ({ text: item.title, category: 'Server' }));
+}
+
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  let newQuotes = 0;
+  serverQuotes.forEach(sq => {
+    if (!quotes.find(q => q.text === sq.text)) {
+      quotes.push(sq);
+      newQuotes++;
+    }
+  });
+  if (newQuotes > 0) {
+    saveQuotes();
+    populateCategories();
+    showRandomQuote();
+    alert(`${newQuotes} new quotes added from server.`);
+  }
+}
+
 // ----- Event Listeners -----
-document.getElementById('newQuote').addEventListener('click', () => displayQuote());
+document.getElementById('newQuote').addEventListener('click', () => showRandomQuote());
 
 // ----- Initialize -----
 populateCategories();
-displayQuote();
+showRandomQuote();
+setInterval(syncQuotes, 30000); // Sync every 30 sec
