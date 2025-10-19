@@ -16,21 +16,43 @@ function showRandomQuote(filteredQuotes = quotes) {
 }
 
 // ----- Add New Quote -----
-const newQuoteText = document.getElementById('newQuoteText');
-const newQuoteCategory = document.getElementById('newQuoteCategory');
-document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
-
 function addQuote() {
-  const text = newQuoteText.value.trim();
-  const category = newQuoteCategory.value.trim();
+  const textInput = document.getElementById('newQuoteText');
+  const categoryInput = document.getElementById('newQuoteCategory');
+  const text = textInput.value.trim();
+  const category = categoryInput.value.trim();
   if (!text || !category) return alert('Please enter both quote and category.');
 
   quotes.push({ text, category });
   saveQuotes();
   populateCategories();
   showRandomQuote();
-  newQuoteText.value = '';
-  newQuoteCategory.value = '';
+  textInput.value = '';
+  categoryInput.value = '';
+}
+
+// ----- Create Add Quote Form -----
+function createAddQuoteForm() {
+  const container = document.getElementById('addQuoteContainer');
+
+  const textInput = document.createElement('input');
+  textInput.id = 'newQuoteText';
+  textInput.type = 'text';
+  textInput.placeholder = 'Enter a new quote';
+
+  const categoryInput = document.createElement('input');
+  categoryInput.id = 'newQuoteCategory';
+  categoryInput.type = 'text';
+  categoryInput.placeholder = 'Enter quote category';
+
+  const addBtn = document.createElement('button');
+  addBtn.id = 'addQuoteBtn';
+  addBtn.textContent = 'Add Quote';
+  addBtn.addEventListener('click', addQuote);
+
+  container.appendChild(textInput);
+  container.appendChild(categoryInput);
+  container.appendChild(addBtn);
 }
 
 // ----- Save to LocalStorage -----
@@ -124,6 +146,7 @@ async function syncQuotes() {
 document.getElementById('newQuote').addEventListener('click', () => showRandomQuote());
 
 // ----- Initialize -----
+createAddQuoteForm();
 populateCategories();
 showRandomQuote();
 setInterval(syncQuotes, 30000); // Sync every 30 sec
