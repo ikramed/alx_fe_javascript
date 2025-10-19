@@ -62,8 +62,6 @@ function saveQuotes() {
 
 // ----- Populate Categories -----
 const categoryFilter = document.getElementById('categoryFilter');
-let selectedCategory = localStorage.getItem('lastCategory') || 'all';
-
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
@@ -74,21 +72,19 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  categoryFilter.value = selectedCategory;
+  const lastFilter = localStorage.getItem('lastCategory') || 'all';
+  categoryFilter.value = lastFilter;
   filterQuotes();
 }
 
 // ----- Filter Quotes -----
-categoryFilter.addEventListener('change', () => {
-  selectedCategory = categoryFilter.value;
-  localStorage.setItem('lastCategory', selectedCategory);
-  filterQuotes();
-});
-
+categoryFilter.addEventListener('change', filterQuotes);
 function filterQuotes() {
-  if (selectedCategory === 'all') showRandomQuote();
+  const selected = categoryFilter.value;
+  localStorage.setItem('lastCategory', selected);
+  if (selected === 'all') showRandomQuote();
   else {
-    const filtered = quotes.filter(q => q.category === selectedCategory);
+    const filtered = quotes.filter(q => q.category === selected);
     showRandomQuote(filtered);
   }
 }
@@ -129,6 +125,21 @@ async function fetchQuotesFromServer() {
   return data.slice(0,5).map(item => ({ text: item.title, category: 'Server' }));
 }
 
+// POST Quotes to Server
+async function postQuoteToServer(quote) {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(quote)
+    });
+    const data = await response.json();
+    console.log("Quote posted to server:", data);
+  } catch (err) {
+    console.error("Error posting quote to server:", err);
+  }
+}
+
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let newQuotes = 0;
@@ -140,13 +151,15 @@ async function syncQuotes() {
       quotes.push(sq);
       newQuotes++;
     } else {
-      // السيرفر يتفوق على المحلي في حالة التعارض
       if (existing.category !== sq.category) {
         existing.category = sq.category;
         conflictsResolved++;
       }
     }
   });
+
+  // نشر الاقتباسات المحلية للسيرفر
+  quotes.forEach(q => postQuoteToServer(q));
 
   if (newQuotes > 0 || conflictsResolved > 0) {
     saveQuotes();
@@ -164,4 +177,4 @@ document.getElementById('newQuote').addEventListener('click', () => showRandomQu
 createAddQuoteForm();
 populateCategories();
 showRandomQuote();
-setInterval(syncQuotes, 30000); // مزامنة كل 30 ثانية
+setInterval(syncQuotes, 30000); // Sync every 30 sec
