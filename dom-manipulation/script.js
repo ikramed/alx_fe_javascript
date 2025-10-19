@@ -21,6 +21,7 @@ function addQuote() {
   const categoryInput = document.getElementById('newQuoteCategory');
   const text = textInput.value.trim();
   const category = categoryInput.value.trim();
+
   if (!text || !category) return alert('Please enter both quote and category.');
 
   quotes.push({ text, category });
@@ -82,6 +83,7 @@ categoryFilter.addEventListener('change', filterQuotes);
 function filterQuotes() {
   const selected = categoryFilter.value;
   localStorage.setItem('lastCategory', selected);
+
   if (selected === 'all') showRandomQuote();
   else {
     const filtered = quotes.filter(q => q.category === selected);
