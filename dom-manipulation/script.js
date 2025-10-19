@@ -122,7 +122,7 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// ----- Server Sync Simulation -----
+// ----- Server Sync & Conflict Resolution -----
 async function fetchQuotesFromServer() {
   const response = await fetch('https://jsonplaceholder.typicode.com/posts');
   const data = await response.json();
@@ -132,17 +132,28 @@ async function fetchQuotesFromServer() {
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let newQuotes = 0;
+  let conflictsResolved = 0;
+
   serverQuotes.forEach(sq => {
-    if (!quotes.find(q => q.text === sq.text)) {
+    const existing = quotes.find(q => q.text === sq.text);
+    if (!existing) {
       quotes.push(sq);
       newQuotes++;
+    } else {
+      // السيرفر يتفوق على المحلي في حالة التعارض
+      if (existing.category !== sq.category) {
+        existing.category = sq.category;
+        conflictsResolved++;
+      }
     }
   });
-  if (newQuotes > 0) {
+
+  if (newQuotes > 0 || conflictsResolved > 0) {
     saveQuotes();
     populateCategories();
     showRandomQuote();
-    alert(`${newQuotes} new quotes added from server.`);
+    if (newQuotes > 0) alert(`${newQuotes} new quotes added from server.`);
+    if (conflictsResolved > 0) alert(`${conflictsResolved} conflicts resolved based on server data.`);
   }
 }
 
@@ -153,4 +164,4 @@ document.getElementById('newQuote').addEventListener('click', () => showRandomQu
 createAddQuoteForm();
 populateCategories();
 showRandomQuote();
-setInterval(syncQuotes, 30000); // Sync every 30 sec
+setInterval(syncQuotes, 30000); // مزامنة كل 30 ثانية
