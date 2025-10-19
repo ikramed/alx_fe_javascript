@@ -21,7 +21,6 @@ function addQuote() {
   const categoryInput = document.getElementById('newQuoteCategory');
   const text = textInput.value.trim();
   const category = categoryInput.value.trim();
-
   if (!text || !category) return alert('Please enter both quote and category.');
 
   quotes.push({ text, category });
@@ -63,6 +62,8 @@ function saveQuotes() {
 
 // ----- Populate Categories -----
 const categoryFilter = document.getElementById('categoryFilter');
+let selectedCategory = localStorage.getItem('lastCategory') || 'all';
+
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
@@ -73,20 +74,21 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  const lastFilter = localStorage.getItem('lastCategory') || 'all';
-  categoryFilter.value = lastFilter;
+  categoryFilter.value = selectedCategory;
   filterQuotes();
 }
 
 // ----- Filter Quotes -----
-categoryFilter.addEventListener('change', filterQuotes);
-function filterQuotes() {
-  const selected = categoryFilter.value;
-  localStorage.setItem('lastCategory', selected);
+categoryFilter.addEventListener('change', () => {
+  selectedCategory = categoryFilter.value;
+  localStorage.setItem('lastCategory', selectedCategory);
+  filterQuotes();
+});
 
-  if (selected === 'all') showRandomQuote();
+function filterQuotes() {
+  if (selectedCategory === 'all') showRandomQuote();
   else {
-    const filtered = quotes.filter(q => q.category === selected);
+    const filtered = quotes.filter(q => q.category === selectedCategory);
     showRandomQuote(filtered);
   }
 }
