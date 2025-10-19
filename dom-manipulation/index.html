@@ -4,38 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-    h1 { text-align: center; }
-    #quoteDisplay { margin: 20px 0; font-size: 1.2em; font-style: italic; }
-    input, select, button { margin: 5px 0; padding: 8px; font-size: 1em; }
-    #addQuoteContainer { margin-top: 20px; }
-  </style>
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
 
   <!-- Quote Display -->
-  <div id="quoteDisplay">Loading quote...</div>
+  <div id="quoteDisplay" style="margin-bottom: 20px; font-weight: bold;"></div>
   <button id="newQuote">Show New Quote</button>
 
   <!-- Category Filter -->
-  <div>
-    <label for="categoryFilter">Filter by Category: </label>
+  <div style="margin-top: 20px;">
+    <label for="categoryFilter">Filter by Category:</label>
     <select id="categoryFilter">
       <option value="all">All Categories</option>
     </select>
   </div>
 
-  <!-- Add New Quote Form -->
-  <div id="addQuoteContainer"></div>
+  <!-- Add Quote Form -->
+  <div id="addQuoteContainer" style="margin-top: 20px;"></div>
 
   <!-- JSON Import/Export -->
-  <div>
+  <div style="margin-top: 20px;">
     <input type="file" id="importFile" accept=".json">
-    <button id="exportBtn">Export JSON</button>
+    <button id="exportBtn">Export Quotes</button>
   </div>
 
+  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
